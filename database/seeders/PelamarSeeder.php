@@ -80,6 +80,25 @@ class PelamarSeeder extends Seeder
                 'nomor_hp' => '+628' . rand(1, 9) . rand(10000000, 99999999),
             ]);
 
+            // Buat 8-12 dokumen dummy random
+            $allTypes = array_keys(\App\Models\Document::TYPES);
+            $jumlahDokumen = rand(8, 12);
+            $selectedTypes = array_slice(
+                array_values(array_unique($allTypes)),
+                0,
+                $jumlahDokumen
+            );
+
+            foreach ($selectedTypes as $type) {
+                \App\Models\Document::create([
+                    'user_id' => $user->id,
+                    'type' => $type,
+                    'file_path' => 'documents/dummy.pdf',
+                    'original_name' => $type . '_dummy.pdf',
+                    'uploaded_at' => now()->subDays(rand(1, 30)),
+                ]);
+            }
+
             // Buat Application dengan status random
             Application::create([
                 'user_id' => $user->id,

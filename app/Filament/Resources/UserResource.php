@@ -202,6 +202,90 @@ class UserResource extends Resource
                             ->collapsible()
                             ->itemLabel(fn(array $state): ?string => $state['nama'] ?? null),
                     ]),
+
+                // ===== SECTION 6: DOKUMEN PENDUKUNG (SECURE) =====
+                Forms\Components\Section::make('Dokumen Pendukung')
+                    ->description('Upload dokumen-dokumen yang diperlukan. Format: PDF, JPG, PNG. Maks 5MB per file. File disimpan di disk private dengan signed URL.')
+                    ->icon('heroicon-o-shield-check')
+                    ->schema([
+                        Forms\Components\Repeater::make('documents')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\Select::make('type')
+                                    ->label('Jenis Dokumen')
+                                    ->options(\App\Models\Document::TYPES)
+                                    ->required()
+                                    ->searchable()
+                                    ->columnSpan(1),
+
+                                Forms\Components\FileUpload::make('file_path')
+                                    ->label('File')
+                                    ->directory(date('Y/m'))
+                                    ->disk('documents')
+                                    ->visibility('private')
+                                    ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
+                                    ->maxSize(5120)
+                                    ->required()
+                                    ->preserveFilenames()
+                                    ->storeFileNamesIn('original_name')
+                                    ->openable(false)
+                                    ->downloadable(false)
+                                    ->columnSpan(2)
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if ($state && method_exists($state, 'getSize')) {
+                                            $set('file_size', $state->getSize());
+                                            $set('mime_type', $state->getMimeType());
+                                        }
+                                    }),
+
+                                Forms\Components\Hidden::make('file_size'),
+                                Forms\Components\Hidden::make('mime_type'),
+
+                                // Placeholder untuk tampilkan secure URL setelah upload
+                                Forms\Components\Placeholder::make('secure_link')
+                                    ->label('Akses File')
+                                    ->columnSpanFull()
+                                    ->content(function ($get, $record) {
+                                        $documents = $record?->documents ?? collect();
+                                        $documentId = $get('id');
+
+                                        if (!$documentId) {
+                                            return new \Illuminate\Support\HtmlString(
+                                                '<span class="text-sm text-gray-500">💾 Simpan dulu untuk dapat link akses.</span>'
+                                            );
+                                        }
+
+                                        $document = \App\Models\Document::find($documentId);
+                                        if (!$document || !$document->fileExists()) {
+                                            return new \Illuminate\Support\HtmlString(
+                                                '<span class="text-sm text-warning-600">⚠️ File tidak ditemukan.</span>'
+                                            );
+                                        }
+
+                                        return new \Illuminate\Support\HtmlString(
+                                            '<div class="flex gap-2">' .
+                                                '<a href="' . $document->getSecureViewUrl() . '" target="_blank" ' .
+                                                'class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700">' .
+                                                '👁️ Lihat File</a>' .
+                                                '<a href="' . $document->getSecureDownloadUrl() . '" ' .
+                                                'class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700">' .
+                                                '⬇️ Download</a>' .
+                                                '<span class="text-xs text-gray-500 self-center">⏱️ Link aktif 5 menit</span>' .
+                                                '</div>'
+                                        );
+                                    }),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0)
+                            ->addActionLabel('+ Tambah Dokumen')
+                            ->collapsible()
+                            ->itemLabel(
+                                fn(array $state): ?string =>
+                                isset($state['type'])
+                                    ? (\App\Models\Document::TYPES[$state['type']] ?? $state['type'])
+                                    : 'Dokumen Baru'
+                            ),
+                    ]),
             ]);
     }
 
@@ -249,8 +333,14 @@ class UserResource extends Resource
                     ->label('Dokumen')
                     ->counts('documents')
                     ->badge()
-                    ->color('gray')
-                    ->suffix(' file'),
+                    ->color(fn($state) => match (true) {
+                        $state == 0 => 'danger',
+                        $state >= 1 && $state < 10 => 'warning',
+                        $state >= 10 => 'success',
+                        default => 'gray',
+                    })
+                    ->suffix(' / 10')
+                    ->tooltip('Klik kolom Aksi → Dokumen untuk lihat detail'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Daftar')
                     ->dateTime('d M Y, H:i')
@@ -273,6 +363,20 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+
+                Tables\Actions\Action::make('viewDocuments')
+                    ->label('Dokumen')
+                    ->icon('heroicon-o-folder-open')
+                    ->color('info')
+                    ->modalHeading(fn(User $record) => 'Dokumen: ' . ($record->biodata?->nama_lengkap ?? $record->name))
+                    ->modalContent(fn(User $record) => view('filament.modals.document-list', [
+                        'user' => $record,
+                        'documents' => $record->documents()->orderBy('type')->get(),
+                    ]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->slideOver(),
+
                 Tables\Actions\Action::make('generatePdf')
                     ->label('PDF')
                     ->icon('heroicon-o-document-arrow-down')
@@ -281,7 +385,7 @@ class UserResource extends Resource
                     ->action(function (User $record) {
                         \Filament\Notifications\Notification::make()
                             ->title('Generate PDF')
-                            ->body("Fitur generate PDF untuk {$record->biodata?->nama_lengkap} akan diimplementasi di tahap berikutnya.")
+                            ->body("Fitur ini akan diimplementasi di Tahap 6.")
                             ->info()
                             ->send();
                     }),
