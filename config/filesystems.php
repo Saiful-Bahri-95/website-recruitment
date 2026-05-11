@@ -47,7 +47,6 @@ return [
             'report' => false,
         ],
 
-        // ===== TAMBAHKAN INI ====
         'documents' => [
             'driver' => 'local',
             'root' => storage_path('app/private/documents'),
@@ -55,7 +54,14 @@ return [
             'throw' => false,
             'report' => false,
         ],
-        // ===== AKHIR =====
+
+        'generated_pdfs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/generated_pdfs'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
 
         's3' => [
             'driver' => 's3',
