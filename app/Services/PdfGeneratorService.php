@@ -4,18 +4,18 @@ namespace App\Services;
 
 use App\Models\PdfGeneration;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use setasign\Fpdi\Fpdi;
+use Spatie\Browsershot\Browsershot;
 
 class PdfGeneratorService
 {
     /**
      * Nama perusahaan untuk footer.
      */
-    private const COMPANY_NAME = 'PT Anugerah Global Recruitment';
+    private const COMPANY_NAME = 'PT Anggita Global Recruitment';
 
     /**
      * Generate PDF profile lengkap + merge dokumen asli.
@@ -46,16 +46,18 @@ class PdfGeneratorService
         try {
             // STEP 1: Generate PDF profil (cover + biodata)
             $profilePdfPath = $tempDir . '/profile.pdf';
-            $pdf = Pdf::loadView('pdfs.pelamar-profile', ['user' => $user])
-                ->setPaper('a4', 'portrait')
-                ->setOptions([
-                    'isHtml5ParserEnabled' => true,
-                    'isPhpEnabled' => true,
-                    'defaultFont' => 'DejaVu Sans',
-                    'isRemoteEnabled' => false,
-                    'dpi' => 96,
-                ]);
-            $pdf->save($profilePdfPath);
+            $html = view('pdfs.modern.layout', [
+                'user' => $user
+            ])->render();
+
+            Browsershot::html($html)
+                ->format('A4')
+                ->margins(0, 0, 0, 0)
+                ->showBackground()
+                ->emulateMedia('print')
+                ->waitUntilNetworkIdle()
+                ->timeout(120)
+                ->save($profilePdfPath);
 
             // STEP 2: Convert gambar dokumen ke PDF (dengan header & footer)
             $documentPdfs = [];

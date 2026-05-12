@@ -13,7 +13,7 @@
         "laravel/tinker": "^2.9",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.6",
-        "spatie/browsershot": "*"
+        "spatie/browsershot": "^5.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
