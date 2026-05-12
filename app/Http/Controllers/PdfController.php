@@ -26,14 +26,10 @@ class PdfController extends Controller
             abort(404, 'PDF tidak ditemukan atau sudah expired');
         }
 
-        return Storage::disk('generated_pdfs')->response(
-            $pdf->file_path,
-            $pdf->file_name,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $pdf->file_name . '"',
-            ]
-        );
+        return response()->file(Storage::disk('generated_pdfs')->path($pdf->file_path), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $pdf->file_name . '"',
+        ]);
     }
 
     /**
@@ -54,10 +50,7 @@ class PdfController extends Controller
             'ip' => request()->ip(),
         ]);
 
-        return Storage::disk('generated_pdfs')->download(
-            $pdf->file_path,
-            $pdf->file_name
-        );
+        return response()->download(Storage::disk('generated_pdfs')->path($pdf->file_path), $pdf->file_name);
     }
 
     /**

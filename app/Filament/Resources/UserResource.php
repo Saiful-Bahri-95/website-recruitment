@@ -382,13 +382,59 @@ class UserResource extends Resource
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('warning')
                     ->tooltip('Generate PDF gabungan biodata + dokumen')
+                    ->requiresConfirmation()
+                    ->modalHeading('Generate PDF Profile?')
+                    ->modalDescription(
+                        fn(User $record) =>
+                        'PDF akan berisi biodata lengkap, riwayat pendidikan, pengalaman kerja, dan daftar ' .
+                            $record->documents->count() . ' dokumen pelamar. ' .
+                            'PDF akan tersimpan selama 24 jam.'
+                    )
+                    ->modalSubmitActionLabel('Ya, Generate')
                     ->action(function (User $record) {
-                        \Filament\Notifications\Notification::make()
-                            ->title('Generate PDF')
-                            ->body("Fitur ini akan diimplementasi di Tahap 6.")
-                            ->info()
-                            ->send();
+                        try {
+                            $pdfService = app(\App\Services\PdfGeneratorService::class);
+                            $pdfGeneration = $pdfService->generateForUser($record);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('PDF Berhasil Di-generate')
+                                ->body("File: {$pdfGeneration->file_name} ({$pdfGeneration->getReadableSize()})")
+                                ->success()
+                                ->duration(8000)
+                                ->actions([
+                                    \Filament\Notifications\Actions\Action::make('view')
+                                        ->label('Lihat PDF')
+                                        ->url($pdfGeneration->getSecureViewUrl(), shouldOpenInNewTab: true)
+                                        ->button(),
+                                    \Filament\Notifications\Actions\Action::make('download')
+                                        ->label('Download')
+                                        ->url($pdfGeneration->getSecureDownloadUrl())
+                                        ->color('gray'),
+                                ])
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Gagal Generate PDF')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
+                Tables\Actions\Action::make('pdfHistory')
+                    ->label('Riwayat PDF')
+                    ->icon('heroicon-o-clock')
+                    ->color('gray')
+                    ->modalHeading(fn(User $record) => 'Riwayat PDF: ' . ($record->biodata?->nama_lengkap ?? $record->name))
+                    ->modalContent(fn(User $record) => view('filament.modals.pdf-history', [
+                        'user' => $record,
+                        'pdfs' => \App\Models\PdfGeneration::where('user_id', $record->id)
+                            ->where('expires_at', '>', now())
+                            ->orderBy('created_at', 'desc')
+                            ->get(),
+                    ]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->slideOver(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

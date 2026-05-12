@@ -18,19 +18,6 @@
             padding: 0;
         }
 
-        /* === WATERMARK === */
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 100px;
-            color: rgba(0, 0, 0, 0.05);
-            font-weight: bold;
-            z-index: -1;
-            pointer-events: none;
-        }
-
         /* === COVER PAGE === */
         .cover-page {
             page-break-after: always;
@@ -113,7 +100,7 @@
 
         .cover-info td:first-child {
             color: #666;
-            width: 35%;
+            width: 40%;
         }
 
         .cover-info td:last-child {
@@ -135,7 +122,7 @@
 
         /* === CONTENT PAGES === */
         .content-page {
-            padding: 30px 50px;
+            padding: 30px 50px 50px 50px;
             page-break-after: always;
         }
 
@@ -236,39 +223,9 @@
             text-transform: uppercase;
         }
 
-        .badge-success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .badge-warning {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-info {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .page-footer {
-            position: fixed;
-            bottom: 20px;
-            left: 50px;
-            right: 50px;
-            font-size: 9px;
-            color: #999;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 8px;
-        }
-
-        .page-footer .left {
-            float: left;
-        }
-
-        .page-footer .right {
-            float: right;
-        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
 
         .empty-state {
             text-align: center;
@@ -280,14 +237,11 @@
 </head>
 <body>
 
-<!-- Watermark -->
-<div class="watermark">CONFIDENTIAL</div>
-
-<!-- ============ COVER PAGE ============ -->
+{{-- ============ COVER PAGE ============ --}}
 <div class="cover-page">
     <div class="header-brand">
-        <div class="company-name">ANGGI</div>
-        <div class="tagline">RECRUITMENT · GLOBAL</div>
+        <div class="company-name">ANUGERAH GLOBAL</div>
+        <div class="tagline">RECRUITMENT</div>
     </div>
 
     <div class="divider"></div>
@@ -315,25 +269,8 @@
             </tr>
             @endif
             <tr>
-                <td>Status Aplikasi</td>
-                <td>
-                    @php
-                        $statusMap = [
-                            'draft' => ['Draft', 'badge-warning'],
-                            'submitted' => ['Submitted', 'badge-info'],
-                            'paid' => ['Paid', 'badge-info'],
-                            'verified' => ['Verified', 'badge-success'],
-                            'rejected' => ['Rejected', 'badge-warning'],
-                        ];
-                        $status = $user->application->status ?? 'draft';
-                        [$label, $class] = $statusMap[$status] ?? ['Unknown', 'badge-warning'];
-                    @endphp
-                    <span class="badge {{ $class }}">{{ $label }}</span>
-                </td>
-            </tr>
-            <tr>
                 <td>Dokumen Terupload</td>
-                <td>{{ $user->documents->count() }} dari 12 jenis dokumen</td>
+                <td>{{ $user->documents->count() }} dokumen</td>
             </tr>
             <tr>
                 <td>Tanggal Generate</td>
@@ -343,13 +280,12 @@
     </div>
 
     <div class="cover-footer">
-        <strong>CONFIDENTIAL DOCUMENT</strong><br>
-        Dokumen ini berisi data pribadi yang dilindungi oleh UU PDP No. 27 Tahun 2022.<br>
-        Dilarang menyalin, mendistribusikan, atau mempublikasikan tanpa izin tertulis.
+        <strong>PT ANUGERAH GLOBAL RECRUITMENT</strong><br>
+        Dokumen ini berisi data pribadi yang dilindungi oleh UU PDP No. 27 Tahun 2022.
     </div>
 </div>
 
-<!-- ============ HALAMAN BIODATA DETAIL ============ -->
+{{-- ============ HALAMAN BIODATA DETAIL ============ --}}
 <div class="content-page">
     <div class="page-header">
         <div class="page-title">Biodata Diri</div>
@@ -382,8 +318,6 @@
             </tr>
         </table>
     </div>
-    @else
-    <div class="empty-state">Biodata belum diisi.</div>
     @endif
 
     <div class="section">
@@ -463,66 +397,6 @@
         <div class="empty-state">Belum ada kontak darurat.</div>
         @endif
     </div>
-</div>
-
-<!-- ============ HALAMAN DOKUMEN ============ -->
-<div class="content-page">
-    <div class="page-header">
-        <div class="page-title">Daftar Dokumen Pendukung</div>
-        <div class="applicant-ref">#{{ $user->id }} · {{ $user->biodata->nama_lengkap ?? $user->name }}</div>
-    </div>
-
-    <p style="font-size: 11px; color: #666; margin-bottom: 20px;">
-        Total {{ $user->documents->count() }} dokumen telah diupload oleh pelamar. Dokumen asli tersimpan secara aman dan dapat diakses oleh pihak yang berwenang.
-    </p>
-
-    @if($user->documents->count() > 0)
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 5%;">#</th>
-                <th style="width: 40%;">Jenis Dokumen</th>
-                <th style="width: 35%;">Nama File</th>
-                <th style="width: 20%;">Diupload</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($user->documents as $idx => $doc)
-            <tr>
-                <td>{{ $idx + 1 }}</td>
-                <td><strong>{{ $doc->getTypeLabel() }}</strong></td>
-                <td style="font-family: monospace; font-size: 10px;">{{ $doc->original_name }}</td>
-                <td>{{ $doc->uploaded_at?->format('d/m/Y') }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    @php
-        $requiredTypes = ['pas_foto', 'surat_lamaran', 'cv', 'ktp', 'npwp', 'vaksin', 'skck', 'ijazah', 'transkrip_nilai', 'kartu_kuning'];
-        $uploadedTypes = $user->documents->pluck('type')->toArray();
-        $missingTypes = array_diff($requiredTypes, $uploadedTypes);
-    @endphp
-
-    @if(count($missingTypes) > 0)
-    <div style="margin-top: 25px; padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b;">
-        <div style="font-weight: bold; color: #92400e; margin-bottom: 5px;">⚠️ Dokumen yang Belum Diupload:</div>
-        <ul style="margin: 5px 0 0 20px; color: #92400e; font-size: 11px;">
-            @foreach($missingTypes as $type)
-            <li>{{ \App\Models\Document::TYPES[$type] ?? $type }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-    @else
-    <div class="empty-state">Belum ada dokumen yang diupload.</div>
-    @endif
-</div>
-
-<!-- Footer untuk setiap halaman -->
-<div class="page-footer">
-    <span class="left">PT Anggi Global Recruitment · CONFIDENTIAL</span>
-    <span class="right">Generated: {{ now()->format('d M Y H:i') }}</span>
 </div>
 
 </body>
