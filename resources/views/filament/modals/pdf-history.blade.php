@@ -14,16 +14,16 @@
         </div>
 
         @foreach($pdfs as $pdf)
-            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                             <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
                             </svg>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                            <div class="font-medium text-sm text-gray-900 truncate">
                                 {{ $pdf->file_name }}
                             </div>
                             <div class="text-xs text-gray-500 mt-0.5">

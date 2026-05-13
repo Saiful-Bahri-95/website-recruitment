@@ -1,3 +1,113 @@
+/* ===== GOOGLE FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ===== TAILWIND DIRECTIVES ===== */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== CSS VARIABLES (untuk akses dari component) ===== */
+@layer base {
+    :root {
+        /* Brand Colors - sync dengan tailwind.config.js */
+        --color-navy: #0A2540;
+        --color-navy-2: #13325F;
+        --color-navy-deep: #061931;
+        --color-gold: #C9A961;
+        --color-gold-light: #E0C580;
+        --color-gold-dark: #A88A47;
+        --color-cream: #FAF7F0;
+        --color-paper: #F5EFE2;
+        --color-border: #E5DCC4;
+        --color-text-muted: #7A6A4F;
+        --color-text-soft: #A89880;
+    }
+
+    /* ===== BASE TYPOGRAPHY ===== */
+    body {
+        @apply font-sans antialiased text-navy bg-cream;
+        font-feature-settings: 'cv11', 'ss01';
+    }
+
+    /* Heading default pakai display font (Bricolage) */
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-display tracking-tight;
+    }
+
+    /* ===== SMOOTH FONTS ===== */
+    * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== CUSTOM SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        @apply bg-paper;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gold rounded;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gold-600;
+    }
+
+    /* ===== SELECTION COLOR ===== */
+    ::selection {
+        @apply bg-gold/30 text-navy;
+    }
+}
+
+/* ===== REUSABLE COMPONENT STYLES ===== */
+@layer components {
+    /* Eyebrow text (small uppercase di atas heading) */
+    .eyebrow {
+        @apply text-[10px] font-medium uppercase tracking-eyebrow text-gold-600;
+    }
+
+    .eyebrow-light {
+        @apply text-[10px] font-medium uppercase tracking-eyebrow text-gold-300;
+    }
+
+    /* Divider dengan gradient gold */
+    .divider-gold {
+        @apply h-px bg-gradient-to-r from-transparent via-gold to-transparent;
+    }
+
+    /* Card dengan border khas brand */
+    .brand-card {
+        @apply bg-white border border-cream-300 rounded-sm;
+    }
+
+    /* Button primary navy */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-7 py-3
+               text-sm font-medium tracking-wider uppercase
+               bg-navy text-cream transition-all
+               hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    /* Button outline navy */
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 px-7 py-3
+               text-sm font-medium tracking-wider uppercase
+               border border-navy text-navy transition-all
+               hover:bg-white;
+    }
+
+    /* Input field khas brand */
+    .input-brand {
+        @apply w-full px-4 py-3.5 text-sm bg-white border border-cream-300
+               text-navy rounded-sm
+               focus:outline-none focus:border-navy focus:ring-1 focus:ring-navy
+               transition-all;
+    }
+
+    /* Label uppercase tracking-wider */
+    .label-brand {
+        @apply block text-[10px] font-semibold uppercase tracking-wider-2 text-navy-600 mb-2;
+    }
+}
