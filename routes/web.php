@@ -22,4 +22,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ===== PELAMAR ROUTES =====
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Biodata
+    Route::get('/biodata', [\App\Http\Controllers\BiodataController::class, 'edit'])
+        ->name('biodata.edit');
+    Route::put('/biodata', [\App\Http\Controllers\BiodataController::class, 'update'])
+        ->name('biodata.update');
+});
+
 require __DIR__ . '/auth.php';
