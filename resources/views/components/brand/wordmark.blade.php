@@ -8,7 +8,7 @@
 
     <div class="leading-tight">
         <div class="font-display tracking-[0.18em] text-[15px] font-semibold {{ $light ? 'text-cream' : 'text-navy' }}">
-            ANUGERAH
+            ANGGITA
         </div>
         <div class="tracking-[0.32em] text-[9px] font-medium text-gold">
             GLOBAL · RECRUITMENT

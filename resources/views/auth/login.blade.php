@@ -54,7 +54,7 @@
 
             {{-- BOTTOM: Copyright --}}
             <div class="relative z-10 text-[10px] tracking-wider text-cream/40">
-                © {{ date('Y') }} Anugerah Global Recruitment · Surabaya, Indonesia
+                © {{ date('Y') }} ANGGITA Global Recruitment · Bekasi, Indonesia
             </div>
         </div>
 

@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
@@ -41,7 +42,11 @@ class UserResource extends Resource
      */
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('role', 'pelamar')->count();
+        return Cache::remember(
+            'users.pelamar.count',
+            now()->addMinute(),
+            fn() => static::getModel()::where('role', 'pelamar')->count()
+        );
     }
 
     public static function form(Form $form): Form
@@ -292,6 +297,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['biodata', 'application']))
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
@@ -387,7 +393,7 @@ class UserResource extends Resource
                     ->modalDescription(
                         fn(User $record) =>
                         'PDF akan berisi biodata lengkap, riwayat pendidikan, pengalaman kerja, dan daftar ' .
-                            $record->documents->count() . ' dokumen pelamar. ' .
+                            $record->documents()->count() . ' dokumen pelamar. ' .
                             'PDF akan tersimpan selama 24 jam.'
                     )
                     ->modalSubmitActionLabel('Ya, Generate')

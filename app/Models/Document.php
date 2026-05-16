@@ -26,7 +26,7 @@ class Document extends Model
     ];
 
     /**
-     * Constants untuk jenis dokumen
+     * Constants untuk jenis dokumen (label untuk display).
      */
     public const TYPES = [
         'pas_foto' => 'Pas Foto (Background Merah)',
@@ -44,7 +44,49 @@ class Document extends Model
     ];
 
     /**
-     * Auto-set uploaded_at saat document dibuat
+     * Dokumen WAJIB upload (9 dari 12).
+     */
+    public const REQUIRED_TYPES = [
+        'pas_foto',
+        'surat_lamaran',
+        'cv',
+        'ktp',
+        'vaksin',
+        'skck',
+        'ijazah',
+        'transkrip_nilai',
+        'kartu_kuning',
+    ];
+
+    /**
+     * Dokumen OPSIONAL (3 dari 12).
+     */
+    public const OPTIONAL_TYPES = [
+        'npwp',
+        'bpjs_kesehatan',
+        'paklaring',
+    ];
+
+    /**
+     * Hint/keterangan per dokumen untuk pelamar.
+     */
+    public const HINTS = [
+        'pas_foto' => 'Background merah, ukuran 4×6 cm, format JPG/PNG',
+        'surat_lamaran' => 'Tulis tangan atau ketik, tanda tangan basah',
+        'cv' => 'Daftar Riwayat Hidup format PDF',
+        'ktp' => 'Foto/scan KTP yang masih berlaku',
+        'npwp' => 'Nomor Pokok Wajib Pajak pribadi',
+        'bpjs_kesehatan' => 'Kartu peserta BPJS Kesehatan',
+        'vaksin' => 'Sertifikat vaksin (gabungkan vaksin 1, 2, booster dalam 1 PDF)',
+        'skck' => 'Surat Keterangan Catatan Kepolisian, masih berlaku',
+        'ijazah' => 'Scan ijazah pendidikan terakhir',
+        'transkrip_nilai' => 'Transkrip nilai pendidikan terakhir',
+        'kartu_kuning' => 'Kartu pencari kerja dari Disnaker',
+        'paklaring' => 'Surat keterangan kerja dari perusahaan sebelumnya',
+    ];
+
+    /**
+     * Auto-set uploaded_at saat document dibuat.
      */
     protected static function booted(): void
     {
@@ -89,10 +131,42 @@ class Document extends Model
 
     /**
      * Helper untuk dapat label dari type.
+     *
+     * Bisa dipanggil dengan atau tanpa parameter:
+     * - $doc->getTypeLabel()       → pakai $this->type
+     * - $doc->getTypeLabel('ktp')  → pakai param explicit
      */
-    public function getTypeLabel(): string
+    public function getTypeLabel(?string $type = null): string
     {
-        return self::TYPES[$this->type] ?? $this->type;
+        $type = $type ?? $this->type;
+
+        return self::TYPES[$type] ?? ($type ?: '');
+    }
+
+    /**
+     * Helper: dapat hint/keterangan per dokumen.
+     */
+    public function getHint(?string $type = null): string
+    {
+        $type = $type ?? $this->type;
+
+        return self::HINTS[$type] ?? '';
+    }
+
+    /**
+     * Static helper: cek apakah jenis dokumen wajib.
+     */
+    public static function isRequired(string $type): bool
+    {
+        return in_array($type, self::REQUIRED_TYPES, true);
+    }
+
+    /**
+     * Static helper: cek apakah jenis dokumen opsional.
+     */
+    public static function isOptional(string $type): bool
+    {
+        return in_array($type, self::OPTIONAL_TYPES, true);
     }
 
     /**
@@ -122,6 +196,14 @@ class Document extends Model
         }
 
         return round($size, 2) . ' ' . $units[$i];
+    }
+
+    /**
+     * Alias untuk getReadableSize() (konsistensi naming dengan controller pelamar).
+     */
+    public function getFormattedSize(): string
+    {
+        return $this->getReadableSize();
     }
 
     /**

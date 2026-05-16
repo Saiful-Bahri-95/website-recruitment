@@ -5,12 +5,32 @@
 
 @php
     $user = auth()->user();
+    $progress = $user->getProgressData();
+    $appStatus = $progress['status'];
+
     $steps = [
-        ['id' => 1, 'label' => 'Biodata', 'icon' => 'user'],
-        ['id' => 2, 'label' => 'Dokumen', 'icon' => 'file'],
-        ['id' => 3, 'label' => 'Pembayaran', 'icon' => 'credit-card'],
-        ['id' => 4, 'label' => 'Verifikasi', 'icon' => 'shield'],
+        ['id' => 1, 'label' => 'Biodata',    'icon' => 'user',        'route' => route('biodata.edit'),    'done' => $progress['steps']['biodata']],
+        ['id' => 2, 'label' => 'Dokumen',    'icon' => 'file',        'route' => route('documents.index'), 'done' => $progress['steps']['dokumen']],
+        ['id' => 3, 'label' => 'Pembayaran', 'icon' => 'credit-card', 'route' => route('payment.index'),   'done' => $progress['steps']['pembayaran']],
+        ['id' => 4, 'label' => 'Verifikasi', 'icon' => 'shield',      'route' => route('status'),          'done' => $progress['steps']['verifikasi']],
     ];
+
+    // Tentukan state tiap step: done / active / upcoming / rejected
+    foreach ($steps as $i => &$step) {
+        if ($appStatus === 'rejected' && $step['id'] === 4) {
+            // Special case: rejected → step 4 jadi alert merah
+            $step['state'] = 'rejected';
+        } elseif ($step['done']) {
+            $step['state'] = 'done';
+        } elseif ($activeStep === $step['id']) {
+            // Halaman saat ini mendeklarasikan dirinya sebagai step tertentu
+            $step['state'] = 'active';
+        } else {
+            // Step pertama yang belum done dianggap "next to do" — opsional
+            $step['state'] = 'upcoming';
+        }
+    }
+    unset($step);
 
     $initials = collect(explode(' ', $user->name))
         ->take(2)
@@ -71,35 +91,33 @@
     @if($showStepIndicator)
         <div class="bg-white/60 backdrop-blur-sm border-b border-cream-300/50">
             <div class="max-w-7xl mx-auto px-6 lg:px-10 py-7">
-                <div class="flex items-center justify-between gap-2 overflow-x-auto">
+                <div class="flex items-center justify-between gap-2 overflow-x-auto" style="padding-top: 1.25rem; padding-bottom: 1.25rem; padding-left: 1.25rem; padding-right: 1.25rem;">
 
                     @foreach($steps as $index => $step)
-                        @php
-                            $isActive = $activeStep === $step['id'];
-                            $isDone = $activeStep !== null && $activeStep > $step['id'];
-                        @endphp
-
                         <div class="flex items-center flex-1 min-w-fit">
 
                             {{-- Step Circle dengan glow effect --}}
-                            <div class="flex flex-col items-center gap-2 min-w-fit relative">
+                            <a href="{{ $step['route'] }}" class="flex flex-col items-center gap-2 min-w-fit relative group hover:opacity-90 transition-opacity">
 
                                 {{-- Glow ring untuk active state --}}
-                                @if($isActive)
+                                @if($step['state'] === 'active')
                                     <div class="absolute -inset-2 bg-navy/20 rounded-full blur-md animate-pulse"></div>
-                                @elseif($isDone)
-                                    <div class="absolute -inset-1 bg-gold/30 rounded-full blur-sm"></div>
                                 @endif
 
                                 <div @class([
-                                    'relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300',
-                                    'bg-gradient-navy text-gold shadow-navy-glow scale-110' => $isActive,
-                                    'bg-gradient-to-br from-gold-400 to-gold-600 text-navy shadow-gold-glow' => $isDone,
-                                    'bg-white border-2 border-cream-300 text-cream-500' => !$isActive && !$isDone,
+                                    'relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-105',
+                                    'bg-gradient-navy text-gold shadow-navy-glow scale-110' => $step['state'] === 'active',
+                                    'bg-gradient-to-br from-gold-400 to-gold-600 text-navy shadow-gold-glow' => $step['state'] === 'done',
+                                    'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-brand-md' => $step['state'] === 'rejected',
+                                    'bg-white border-2 border-cream-300 text-cream-500' => $step['state'] === 'upcoming',
                                 ])>
-                                    @if($isDone)
+                                    @if($step['state'] === 'done')
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    @elseif($step['state'] === 'rejected')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                     @else
                                         @switch($step['icon'])
@@ -132,20 +150,21 @@
                                     <div class="text-[9px] tracking-wider-2 uppercase text-cream-500 font-medium">Step {{ $step['id'] }}</div>
                                     <div @class([
                                         'text-xs font-semibold tracking-wide',
-                                        'text-navy' => $isActive || $isDone,
-                                        'text-cream-500' => !$isActive && !$isDone,
+                                        'text-navy' => in_array($step['state'], ['active', 'done']),
+                                        'text-red-600' => $step['state'] === 'rejected',
+                                        'text-cream-500' => $step['state'] === 'upcoming',
                                     ])>
                                         {{ $step['label'] }}
                                     </div>
                                 </div>
-                            </div>
+                            </a>
 
                             {{-- Connector Line dengan gradient --}}
                             @if($index < count($steps) - 1)
                                 <div @class([
                                     'flex-1 h-0.5 mx-3 -mt-7 rounded-full',
-                                    'bg-gradient-to-r from-gold-400 to-gold-600' => $isDone,
-                                    'bg-cream-300' => !$isDone,
+                                    'bg-gradient-to-r from-gold-400 to-gold-600' => $step['state'] === 'done',
+                                    'bg-cream-300' => $step['state'] !== 'done',
                                 ])></div>
                             @endif
                         </div>

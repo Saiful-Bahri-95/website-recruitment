@@ -10,6 +10,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
+/**
+ * @method \Illuminate\Database\Eloquent\Relations\HasOne biodata()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany documents()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany educations()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany workExperiences()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany emergencyContacts()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany payments()
+ * @method \Illuminate\Database\Eloquent\Relations\HasOne application()
+ */
+
 class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
@@ -17,8 +27,8 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name',
         'email',
-        'password',
         'role',
+        'password',
     ];
 
     protected $hidden = [
@@ -74,5 +84,45 @@ class User extends Authenticatable implements FilamentUser
     public function application(): HasOne
     {
         return $this->hasOne(Application::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(\App\Models\Payment::class);
+    }
+
+    /**
+     * Hitung progres aplikasi pelamar — dipakai dashboard & halaman status.
+     */
+    public function getProgressData(): array
+    {
+        $application = $this->application;
+        $status = $application?->status ?? 'draft';
+
+        $biodataDone = $this->biodata()->exists();
+
+        $documentsCount = $this->documents()->count();
+        $documentsDone = $documentsCount >= 10;
+
+        $paymentDone = in_array($status, ['paid', 'verified']);
+        $verificationDone = $status === 'verified';
+
+        $steps = [
+            'biodata'    => $biodataDone,
+            'dokumen'    => $documentsDone,
+            'pembayaran' => $paymentDone,
+            'verifikasi' => $verificationDone,
+        ];
+
+        $completed = count(array_filter($steps));
+
+        return [
+            'steps'           => $steps,
+            'completed'       => $completed,
+            'total'           => 4,
+            'percentage'      => (int) round(($completed / 4) * 100),
+            'documents_count' => $documentsCount,
+            'status'          => $status,
+        ];
     }
 }

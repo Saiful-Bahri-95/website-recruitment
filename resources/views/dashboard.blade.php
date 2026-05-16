@@ -29,9 +29,67 @@
 
                 {{-- Right: Progress Card --}}
                 @php
-                    $stepsCompleted = 0; // Placeholder
-                    $totalSteps = 4;
-                    $progress = round(($stepsCompleted / $totalSteps) * 100);
+                    $progressData = auth()->user()->getProgressData();
+                    $stepsCompleted = $progressData['completed'];
+                    $totalSteps = $progressData['total'];
+                    $progress = $progressData['percentage'];
+                    $appStatus = $progressData['status'];
+
+                    // ===== Variasi card STEP 4 berdasarkan status aplikasi =====
+                    $step4 = match($appStatus) {
+                        'paid' => [
+                            'variant'      => 'active',
+                            'iconBg'       => 'bg-gradient-navy shadow-navy-glow',
+                            'iconColor'    => 'text-gold',
+                            'titleColor'   => 'text-navy',
+                            'badgeText'    => 'Sedang Ditinjau',
+                            'badgeBg'      => 'bg-gradient-gold-soft text-gold-700',
+                            'actionLabel'  => 'Tinjau Status Lamaran',
+                            'actionColor'  => 'text-navy group-hover:text-gold-600',
+                            'arrowBg'      => 'bg-paper group-hover:bg-gold',
+                            'arrowColor'   => 'text-navy',
+                            'shimmer'      => false,
+                        ],
+                        'verified' => [
+                            'variant'      => 'success',
+                            'iconBg'       => 'bg-gradient-to-br from-green-500 to-green-600 shadow-brand-md',
+                            'iconColor'    => 'text-white',
+                            'titleColor'   => 'text-navy',
+                            'badgeText'    => 'Lulus Verifikasi',
+                            'badgeBg'      => 'bg-green-50 text-green-700 border border-green-200',
+                            'actionLabel'  => 'Lihat Hasil Verifikasi',
+                            'actionColor'  => 'text-green-700 group-hover:text-green-900',
+                            'arrowBg'      => 'bg-green-50 group-hover:bg-green-500',
+                            'arrowColor'   => 'text-green-700 group-hover:text-white',
+                            'shimmer'      => false,
+                        ],
+                        'rejected' => [
+                            'variant'      => 'alert',
+                            'iconBg'       => 'bg-gradient-to-br from-red-500 to-red-600 shadow-brand-md',
+                            'iconColor'    => 'text-white',
+                            'titleColor'   => 'text-navy',
+                            'badgeText'    => 'Perlu Perhatian',
+                            'badgeBg'      => 'bg-red-50 text-red-700 border border-red-200',
+                            'actionLabel'  => 'Lihat Catatan Admin',
+                            'actionColor'  => 'text-red-700 group-hover:text-red-900',
+                            'arrowBg'      => 'bg-red-50 group-hover:bg-red-500',
+                            'arrowColor'   => 'text-red-700 group-hover:text-white',
+                            'shimmer'      => false,
+                        ],
+                        default => [ // draft, submitted
+                            'variant'      => 'idle',
+                            'iconBg'       => 'bg-gradient-to-br from-cream-400 to-cream-500',
+                            'iconColor'    => 'text-navy/40',
+                            'titleColor'   => 'text-navy/70',
+                            'badgeText'    => '1×24 Jam',
+                            'badgeBg'      => 'bg-paper text-cream-600',
+                            'actionLabel'  => 'Menunggu Tahapan Sebelumnya',
+                            'actionColor'  => 'text-cream-500',
+                            'arrowBg'      => 'bg-paper',
+                            'arrowColor'   => 'text-cream-500',
+                            'shimmer'      => true,
+                        ],
+                    };
                 @endphp
 
                 <div class="bg-white rounded-2xl border border-cream-300 p-6 min-w-[280px] shadow-brand-md">
@@ -64,181 +122,88 @@
             </div>
         </div>
 
-        {{-- ============ 4 STEP CARDS - MODERN GRID ============ --}}
-        <div class="grid md:grid-cols-2 gap-6 mb-12">
+        {{-- STEP 4: VERIFIKASI --}}
+        <a href="{{ route('status') }}" class="group block">
+            <div class="relative bg-white rounded-2xl border border-cream-300 p-7 transition-all duration-300
+                        hover:border-gold hover:shadow-gold-glow hover:-translate-y-1
+                        overflow-hidden" style="margin-bottom: 1.75rem";>
 
-            {{-- STEP 1: BIODATA --}}
-            <a href="{{ route('biodata.edit') }}" class="group block">
-                <div class="relative bg-white rounded-2xl border border-cream-300 p-7 transition-all duration-300
-                            hover:border-gold hover:shadow-gold-glow hover:-translate-y-1
-                            overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
 
-                    {{-- Decorative gold accent corner --}}
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
-
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-navy flex items-center justify-center shadow-navy-glow">
-                                <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-                                </svg>
-                            </div>
-                            <span class="text-[9px] tracking-wider-2 uppercase font-semibold px-3 py-1.5 bg-paper text-cream-600 rounded-full">
-                                Wajib
-                            </span>
-                        </div>
-
-                        <div class="text-[10px] tracking-wider-2 uppercase text-gold-600 mb-1 font-semibold">Tahap 1</div>
-                        <h3 class="font-display text-2xl text-navy font-semibold mb-2 leading-tight">
-                            Lengkapi Biodata Diri
-                        </h3>
-                        <p class="text-sm text-cream-600 leading-relaxed mb-6">
-                            Isi data pribadi, riwayat pendidikan, pengalaman kerja, dan kontak darurat sesuai dokumen resmi.
-                        </p>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-cream-300/50">
-                            <span class="text-xs tracking-wider uppercase font-semibold text-navy group-hover:text-gold-600 transition-colors">
-                                Mulai Isi Biodata
-                            </span>
-                            <div class="w-8 h-8 rounded-full bg-paper group-hover:bg-gold flex items-center justify-center transition-all">
-                                <svg class="w-4 h-4 text-navy group-hover:text-navy transition-all group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            {{-- STEP 2: DOKUMEN --}}
-            <a href="#dokumen" class="group block">
-                <div class="relative bg-white rounded-2xl border border-cream-300 p-7 transition-all duration-300
-                            hover:border-gold hover:shadow-gold-glow hover:-translate-y-1
-                            overflow-hidden">
-
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
-
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-navy flex items-center justify-center shadow-navy-glow">
-                                <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-                                </svg>
-                            </div>
-                            <span class="text-[9px] tracking-wider-2 uppercase font-semibold px-3 py-1.5 bg-paper text-cream-600 rounded-full">
-                                12 Dokumen
-                            </span>
-                        </div>
-
-                        <div class="text-[10px] tracking-wider-2 uppercase text-gold-600 mb-1 font-semibold">Tahap 2</div>
-                        <h3 class="font-display text-2xl text-navy font-semibold mb-2 leading-tight">
-                            Unggah Dokumen Pendukung
-                        </h3>
-                        <p class="text-sm text-cream-600 leading-relaxed mb-6">
-                            Upload pas foto, KTP, ijazah, SKCK, dan dokumen pendukung lainnya. Format PDF/JPG/PNG, maks 5MB.
-                        </p>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-cream-300/50">
-                            <span class="text-xs tracking-wider uppercase font-semibold text-navy group-hover:text-gold-600 transition-colors">
-                                Upload Dokumen
-                            </span>
-                            <div class="w-8 h-8 rounded-full bg-paper group-hover:bg-gold flex items-center justify-center transition-all">
-                                <svg class="w-4 h-4 text-navy transition-all group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            {{-- STEP 3: PEMBAYARAN --}}
-            <a href="#pembayaran" class="group block">
-                <div class="relative bg-white rounded-2xl border border-cream-300 p-7 transition-all duration-300
-                            hover:border-gold hover:shadow-gold-glow hover:-translate-y-1
-                            overflow-hidden">
-
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
-
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-navy flex items-center justify-center shadow-navy-glow">
-                                <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
-                                </svg>
-                            </div>
-                            <span class="text-[9px] tracking-wider-2 uppercase font-semibold px-3 py-1.5 bg-gradient-gold-soft text-gold-700 rounded-full">
-                                Rp 350.000
-                            </span>
-                        </div>
-
-                        <div class="text-[10px] tracking-wider-2 uppercase text-gold-600 mb-1 font-semibold">Tahap 3</div>
-                        <h3 class="font-display text-2xl text-navy font-semibold mb-2 leading-tight">
-                            Pembayaran Administrasi
-                        </h3>
-                        <p class="text-sm text-cream-600 leading-relaxed mb-6">
-                            Transfer biaya pemrosesan berkas ke rekening yang tersedia, lalu unggah bukti pembayaran.
-                        </p>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-cream-300/50">
-                            <span class="text-xs tracking-wider uppercase font-semibold text-navy group-hover:text-gold-600 transition-colors">
-                                Lihat Info Pembayaran
-                            </span>
-                            <div class="w-8 h-8 rounded-full bg-paper group-hover:bg-gold flex items-center justify-center transition-all">
-                                <svg class="w-4 h-4 text-navy transition-all group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            {{-- STEP 4: VERIFIKASI --}}
-            <div class="group block">
-                <div class="relative bg-white rounded-2xl border border-cream-300 p-7 transition-all duration-300
-                            hover:border-gold hover:shadow-gold-glow hover:-translate-y-1
-                            overflow-hidden">
-
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
-
-                    {{-- Shimmer effect overlay --}}
+                {{-- Shimmer hanya saat idle --}}
+                @if($step4['shimmer'])
                     <div class="absolute inset-0 animate-shimmer opacity-30 pointer-events-none"></div>
+                @endif
 
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cream-400 to-cream-500 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-navy/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
-                                </svg>
-                            </div>
-                            <span class="text-[9px] tracking-wider-2 uppercase font-semibold px-3 py-1.5 bg-paper text-cream-600 rounded-full">
-                                1×24 Jam
-                            </span>
+                <div class="relative">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="w-14 h-14 rounded-xl flex items-center justify-center {{ $step4['iconBg'] }}">
+                            @switch($step4['variant'])
+                                @case('success')
+                                    {{-- Checkmark untuk verified --}}
+                                    <svg class="w-6 h-6 {{ $step4['iconColor'] }}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                                    </svg>
+                                    @break
+                                @case('alert')
+                                    {{-- Warning untuk rejected --}}
+                                    <svg class="w-6 h-6 {{ $step4['iconColor'] }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    @break
+                                @default
+                                    {{-- Shield untuk idle & active --}}
+                                    <svg class="w-6 h-6 {{ $step4['iconColor'] }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+                                    </svg>
+                            @endswitch
                         </div>
+                        <span class="text-[9px] tracking-wider-2 uppercase font-semibold px-3 py-1.5 rounded-full {{ $step4['badgeBg'] }}">
+                            {{ $step4['badgeText'] }}
+                        </span>
+                    </div>
 
-                        <div class="text-[10px] tracking-wider-2 uppercase text-gold-600 mb-1 font-semibold">Tahap 4</div>
-                        <h3 class="font-display text-2xl text-navy/70 font-semibold mb-2 leading-tight">
-                            Verifikasi Admin
-                        </h3>
-                        <p class="text-sm text-cream-600 leading-relaxed mb-6">
-                            Tim verifikasi akan meninjau kelengkapan biodata, dokumen, dan pembayaran Anda. Notifikasi via email.
-                        </p>
+                    <div class="text-[10px] tracking-wider-2 uppercase text-gold-600 mb-1 font-semibold">Tahap 4</div>
+                    <h3 class="font-display text-2xl font-semibold mb-2 leading-tight {{ $step4['titleColor'] }}">
+                        Verifikasi Admin
+                    </h3>
+                    <p class="text-sm text-cream-600 leading-relaxed mb-6">
+                        @switch($step4['variant'])
+                            @case('active')
+                                Berkas Anda sedang ditinjau oleh tim verifikasi. Estimasi 1×24 jam kerja.
+                                @break
+                            @case('success')
+                                Selamat! Berkas Anda telah lolos verifikasi. Tim kami akan menghubungi untuk tahap selanjutnya.
+                                @break
+                            @case('alert')
+                                Ada hal yang perlu diperhatikan. Buka halaman status untuk membaca catatan dari tim verifikasi.
+                                @break
+                            @default
+                                Tim verifikasi akan meninjau kelengkapan biodata, dokumen, dan pembayaran Anda. Notifikasi via email.
+                        @endswitch
+                    </p>
 
-                        <div class="flex items-center justify-between pt-4 border-t border-cream-300/50">
-                            <span class="text-xs tracking-wider uppercase font-semibold text-cream-500">
-                                Otomatis Setelah Submit
-                            </span>
-                            <div class="w-8 h-8 rounded-full bg-paper flex items-center justify-center">
-                                <svg class="w-4 h-4 text-cream-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <div class="flex items-center justify-between pt-4 border-t border-cream-300/50">
+                        <span class="text-xs tracking-wider uppercase font-semibold transition-colors {{ $step4['actionColor'] }}">
+                            {{ $step4['actionLabel'] }}
+                        </span>
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center transition-all {{ $step4['arrowBg'] }}">
+                            @if($step4['variant'] === 'idle')
+                                {{-- Idle: jam, bukan panah --}}
+                                <svg class="w-4 h-4 {{ $step4['arrowColor'] }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                            </div>
+                            @else
+                                {{-- Aktif/Success/Alert: panah --}}
+                                <svg class="w-4 h-4 transition-all group-hover:translate-x-0.5 {{ $step4['arrowColor'] }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                                </svg>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
 
         {{-- ============ INFO BOX - PREMIUM ALERT ============ --}}
         <div class="relative bg-gradient-to-r from-white to-paper rounded-2xl border border-gold/40 p-7 mb-12 overflow-hidden shadow-brand-md">
@@ -321,7 +286,7 @@
                 <div class="h-px w-12 bg-gradient-to-l from-transparent to-gold/40"></div>
             </div>
             <p class="text-xs tracking-wider uppercase text-cream-500 mt-4 font-medium">
-                PT Anugerah Global Recruitment · Surabaya, Indonesia
+                PT Anggita Global Recruitment · Bekasi, Indonesia
             </p>
         </div>
 

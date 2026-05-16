@@ -43,6 +43,13 @@ class RegisteredUserController extends Controller
             'role' => 'pelamar',
         ]);
 
+        // Dijamin tidak null — bikin otomatis kalau belum ada (jaring pengaman pelamar lama)
+        $application = $user->application()->firstOrCreate(
+            [],
+            ['status' => 'draft']
+        );
+
+
         event(new Registered($user));
 
         Auth::login($user);

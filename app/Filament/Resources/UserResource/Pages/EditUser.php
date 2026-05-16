@@ -16,4 +16,23 @@ class EditUser extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Jika ada nested data 'application' dari relationship section
+        if (isset($data['application'])) {
+            $app = $data['application'];
+
+            // Auto-set tanggal verifikasi saat status jadi verified
+            if (($app['status'] ?? null) === 'verified' && empty($app['verified_at'])) {
+                $data['application']['verified_at'] = now();
+            }
+
+            // Kosongkan verified_at kalau status mundur dari verified
+            if (($app['status'] ?? null) !== 'verified') {
+                $data['application']['verified_at'] = null;
+            }
+        }
+
+        return $data;
+    }
 }

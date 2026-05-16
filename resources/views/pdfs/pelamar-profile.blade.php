@@ -240,7 +240,7 @@
 {{-- ============ COVER PAGE ============ --}}
 <div class="cover-page">
     <div class="header-brand">
-        <div class="company-name">ANUGERAH GLOBAL</div>
+        <div class="company-name">ANGGITA GLOBAL</div>
         <div class="tagline">RECRUITMENT</div>
     </div>
 
@@ -280,7 +280,7 @@
     </div>
 
     <div class="cover-footer">
-        <strong>PT ANUGERAH GLOBAL RECRUITMENT</strong><br>
+        <strong>PT ANGGITA GLOBAL RECRUITMENT</strong><br>
         Dokumen ini berisi data pribadi yang dilindungi oleh UU PDP No. 27 Tahun 2022.
     </div>
 </div>
